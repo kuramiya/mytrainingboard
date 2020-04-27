@@ -2,64 +2,43 @@
 <html lang="ja">
     <head>
         <meta charset="utf-8">
-        <title>sample1</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!--bootstrap css-->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
         <script src="https://unpkg.com/konva@3.1.0/konva.js"></script>
+
+        <title>sample1</title>
     </head>
     <body>
-        <div id="container"></div>
-        <script>
-            // first we need to create a stage
-            var stage = new Konva.Stage({
-                container: 'container',   // id of container <div>
-                width: 500,
-                height: 500
-            });
+        <div class="container">
+            <div class="row">
+                <h1>My Training Board Auto Problem</h1>
+            </div>
+            <div class="row">
+                <div id="konvacontainer"></div>    
+            </div>
+            <div class="row">
+                <button type="button" class="btn btn-primary btn-lg m-1">Training Start</button>
+            </div>
+            <div class="row">
+                <div class="input-group m-1">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Update Interval</span>
+                        <input type="text" class="form-control col-3" placeholder="5000" aria-label="Update interval" aria-describedby="button-addon1">
+                        <span class="input-group-text">msec</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            // then create layer
-            var layer = new Konva.Layer();
+        <script src="./boardscript.js"></script>
 
-            // create our shape
-            var circle = new Konva.Circle({
-                x: stage.width() / 2,
-                y: stage.height() / 2,
-                radius: 70,
-                fill: 'red',
-                stroke: 'black',
-                strokeWidth: 4
-            });
-
-            var pentagon = new Konva.RegularPolygon({
-                x: stage.width() * (2/3),
-                y: stage.height() * (2/3),
-                sides: 5,
-                radius: 70,
-                fill: 'red',
-                stroke: 'black',
-                strokeWidth: 4,
-                shadowOffsetX : 20,
-                shadowOffsetY : 25,
-                shadowBlur : 40,
-                opacity : 0.1
-            });
-
-            var rect1 = new Konva.Rect({
-                x: 0,
-                y: 0,
-                width: 10,
-                height: 10,
-                fill: "green",
-            });
-
-            // add the shape to the layer
-            layer.add(circle);
-            layer.add(pentagon);
-            layer.add(rect1);
-
-            // add the layer to the stage
-            stage.add(layer);
-
-            // draw the image
-            layer.draw();
-        </script>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     </body>
 </html>
