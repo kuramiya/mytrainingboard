@@ -15,7 +15,10 @@ function Init()
     });
 
     var leftBarX = 100;
+    var leftMainBoardX = 140;
     var rightBarX = 400;
+    var rightMainBoardX = 320;
+    var mainHoldWidth = 60;
 
     // then create layer
     var leftBar = new Konva.Rect({
@@ -62,9 +65,9 @@ function Init()
     holds["L9"] = CreateHold(leftBarX, 540,);
     holds["L10"] = CreateHold(leftBarX + 20, 540,);
 
-    holds["LGaba"] = CreateHold(140, 140, 60);
-    holds["L38mm"] = CreateHold(140, 180, 60);
-    holds["L19mm"] = CreateHold(140, 220, 60);
+    holds["LGaba"] = CreateHold(leftMainBoardX, 140, mainHoldWidth);
+    holds["L38mm"] = CreateHold(leftMainBoardX, 180, mainHoldWidth);
+    holds["L19mm"] = CreateHold(leftMainBoardX, 220, mainHoldWidth);
     holds["LClip"] = CreateHold(leftBarX, 260, 20, 20, "orange");
 
     holds["R1"] = CreateHold(rightBarX, 20);
@@ -78,9 +81,9 @@ function Init()
     holds["R9"] = CreateHold(rightBarX, 540);
     holds["R10"] = CreateHold(rightBarX - 20, 540);
 
-    holds["RGaba"] = CreateHold(320, 140, 60);
-    holds["R38mm"] = CreateHold(320, 180, 60);
-    holds["R19mm"] = CreateHold(320, 220, 60);
+    holds["RGaba"] = CreateHold(rightMainBoardX, 140, mainHoldWidth);
+    holds["R38mm"] = CreateHold(rightMainBoardX, 180, mainHoldWidth);
+    holds["R19mm"] = CreateHold(rightMainBoardX, 220, mainHoldWidth);
     holds["RClip"] = CreateHold(rightBarX, 260, 20, 20, "orange");
 
     for(let key in holds)
@@ -95,6 +98,8 @@ function Init()
         fill: "white",
     });
     boardLayer.add(str);
+
+    var ui = parseInt(document.forms.updateIntervalText.value, 10);
 
     // add the layer to the stage
     stage.add(boardLayer);
@@ -125,6 +130,6 @@ function Start()
         var x = hold.x();
         hold.x(x + 1);
         boardLayer.draw();
-    }, 1000);
+    }, parseInt(getElementById["updateIntervalText"].value, 10));
 }
 
