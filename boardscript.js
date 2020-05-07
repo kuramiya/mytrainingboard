@@ -1,3 +1,9 @@
+//  更新頻度の初期値（ミリ秒）
+const UPTDATE_INTERVAL_MSEC = 5000;
+
+//  更新頻度加算の初期値（ミリ秒）
+const INTERVAL_INCREASE_MSEC = 100;
+
 class Hold
 {
     constructor(id, isFoot, isClip, LR, x, y, width, height, boardLayer)
@@ -30,16 +36,16 @@ class Board
 {
     constructor(stage)
     {
-        var boardColor = "tan";
-        var leftBarX = 100;
-        var leftMainBoardX = 160;
-        var rightBarX = 380;
-        var rightMainBoardX = 300;
-        var mainHoldWidth = 40;
+        let boardColor = "tan";
+        let leftBarX = 100;
+        let leftMainBoardX = 160;
+        let rightBarX = 380;
+        let rightMainBoardX = 300;
+        let mainHoldWidth = 40;
 
         this.layer = new Konva.Layer();
 
-        var leftBar = new Konva.Rect({
+        let leftBar = new Konva.Rect({
             x: leftBarX,
             y: 0,
             width: 20,
@@ -50,7 +56,7 @@ class Board
         });
         this.layer.add(leftBar);
     
-        var rightBar = new Konva.Rect({
+        let rightBar = new Konva.Rect({
             x: rightBarX,
             y: 0,
             width: 20,
@@ -61,7 +67,7 @@ class Board
         });
         this.layer.add(rightBar);
     
-        var mainBoard = new Konva.Rect({
+        let mainBoard = new Konva.Rect({
             x: leftBarX,
             y: 140,
             width: 300,
@@ -117,14 +123,25 @@ class Board
 
     getHold(id)
     {
-        var targetHolds = this.holds.filter(x => x.id == id);
+        let targetHolds = this.holds.filter(x => x.id == id);
 
         return targetHolds[0];
     }
 
-    getRandomHold()
+    //  ランダムな手用のホールドを返す
+    getRandomHandHold()
     {
-        return this.holds[Math.floor(Math.random() * this.holds.length)];
+        let handHolds = this.holds.filter(x => x.id.match(/Hand/));
+
+        return handHolds[Math.floor(Math.random() * handHolds.length)];
+    }
+
+    //  ランダムな足用のホールドを返す
+    getRandomFootHold()
+    {
+        let footHolds = this.holds.filter(x => x.id.match(/Foot/));
+
+        return footHolds[Math.floor(Math.random() * footHolds.length)];
     }
 
     draw()
@@ -141,7 +158,7 @@ class Select
         this.isFoot = isFoot;
         this.LR = LR;
 
-        var fill = "red";
+        let fill = "red";
 
         if(isFoot) fill = "green";
 
@@ -156,8 +173,17 @@ class Select
         });
         selectLayer.add(this.rect);
 
+        this.circle = new Konva.Circle({            
+            x: selectedHold.rect.x() + (selectedHold.rect.width() / 2),
+            y: selectedHold.rect.y() + (selectedHold.rect.height() / 2),
+            radius: 25,
+            stroke: fill,
+            strokeWidth : 2,
+        });
+        selectLayer.add(this.circle);
+
         this.text = new Konva.Text({
-            x: selectedHold.rect.x() + (selectedHold.rect.width() / 4),
+            x: selectedHold.rect.x() + (selectedHold.rect.width() / 2) - 5,
             y: selectedHold.rect.y() + (selectedHold.rect.height() / 4),
             text: LR,
             fill: "white",
@@ -172,7 +198,10 @@ class Select
         this.rect.width(selectedHold.rect.width());
         this.rect.height(selectedHold.rect.height());
 
-        this.text.x(selectedHold.rect.x() + (selectedHold.rect.width() / 4));
+        this.circle.x(selectedHold.rect.x() + (selectedHold.rect.width() / 2));
+        this.circle.y(selectedHold.rect.y() + (selectedHold.rect.height() / 2));
+
+        this.text.x(selectedHold.rect.x() + (selectedHold.rect.width() / 2) - 5);
         this.text.y(selectedHold.rect.y() + (selectedHold.rect.height() / 4));
     }
 }
@@ -183,17 +212,71 @@ class Selector
     {
         this.layer = new Konva.Layer();
 
-        this.leftHand = new Select("LeftHandSelect", false, "L", this.layer, board.getHold("LeftHand38mm"));
-        this.rightHand = new Select("RightHandSelect", false, "R", this.layer, board.getHold("RightHand38mm"));
-        this.leftFoot = new Select("LeftFootSelect", true, "L", this.layer, board.getHold("LeftFoot4"));
-        this.rightFoot = new Select("RightFootSelect", true, "R", this.layer, board.getHold("RightFoot4"));
+        this.selects = [];
+        
+        this.selects.push(new Select("LeftHandSelect", false, "L", this.layer, board.getHold("LeftHand38mm")));
+        this.selects.push(new Select("RightHandSelect", false, "R", this.layer, board.getHold("RightHand38mm")));
+        this.selects.push(new Select("LeftFootSelect", true, "L", this.layer, board.getHold("LeftFoot4")));
+        this.selects.push(new Select("RightFootSelect", true, "R", this.layer, board.getHold("RightFoot4")));
     
+        this.previousSelect = this.selects[0];
+
         stage.add(this.layer);
+    }
+
+    //  指定したIDに一致する一手の配列を返す
+    getTargetSelects(regExpId)
+    {
+        let targetSelects = this.selects.filter(x => x.id.match(regExpId));
+
+        return targetSelects;
+    }
+
+    //  初期化する
+    reset(board)
+    {
+        getTargetSelects(/LeftHand/)[0].updateSelect(board.getHold("LeftHand38mm"));
+        getTargetSelects(/RightHand/)[0].updateSelect(board.getHold("RightHand38mm"));
+        getTargetSelects(/LeftFoot/)[0].updateSelect(board.getHold("LeftFoot4"));
+        getTargetSelects(/RightFoot/)[0].updateSelect(board.getHold("RightFoot4"));
     }
 
     selectHold(hold)
     {
-        this.leftHand.updateSelect(hold);
+        this.selects[0].updateSelect(hold);
+    }
+
+    update(board)
+    {
+        let nextSelect;
+        let nextHold;
+
+        //  最後に動かしたのが足の場合、次は手を動かす
+        if(this.previousSelect == this.leftFoot || this.previousSelect == this.rightFoot)
+        {
+            let nextHandSelects = this.getTargetSelects(/Hand/);
+
+            nextSelect = nextHandSelects[Math.floor(Math.random() * nextHandSelects.length)];
+
+            nextHold = board.getRandomHandHold();
+        }
+        else
+        {
+            nextSelect = this.selects[Math.floor(Math.random() * this.selects.length)];
+
+            if(nextSelect.id.match(/Hand/))
+            {
+                nextHold = board.getRandomHandHold();
+            }
+            else
+            {
+                nextHold = board.getRandomFootHold();
+            }
+        }
+
+        nextSelect.updateSelect(nextHold);
+
+        this.previousSelect = nextSelect;
     }
 
     draw()
@@ -202,7 +285,8 @@ class Selector
     }
 }
 
-function Init()
+//  初期化する
+function init()
 {
     // first we need to create a stage
     var stage = new Konva.Stage({
@@ -218,17 +302,44 @@ function Init()
     selector.draw();
 }
 
-function Start()
+//  再度初期化する
+function reset()
 {
-    setInterval(function timerHandler()
-    {
-        let hold = board.getRandomHold();
+    isRunning = false;
 
-        selector.selectHold(hold);
+    selector.reset(board);
 
-        selector.draw();
-    }, parseInt(document.getElementById("updateIntervalText").value, 10));
+    document.getElementById("updateIntervalText").value = UPTDATE_INTERVAL_MSEC;
+    document.getElementById("intervalIncreaseText").value = INTERVAL_INCREASE_MSEC;
+
+    selector.draw();
 }
+
+//  処理を開始する
+function start()
+{
+    updateInterval_msec = parseInt(document.getElementById("updateIntervalText").value, 10);
+    intervalIncrease_msec = parseInt(document.getElementById("intervalIncreaseText").value, 10);
+
+    isRunning = true;
+
+    setTimeout(intervalHandler, updateInterval_msec);
+}
+
+//  周期更新処理のハンドラ
+function intervalHandler()
+{
+    if(isRunning == false) return;
+
+    selector.update(board);
+
+    selector.draw();
+
+    updateInterval_msec = updateInterval_msec + intervalIncrease_msec;
+
+    setTimeout(intervalHandler, updateInterval_msec);
+}
+
 
 //  ボード本体のレイヤー、動作不要
 var board;
@@ -236,7 +347,18 @@ var board;
 //  選択状態のレイヤー、動作させる
 var selector;
 
-//  初期化処理（ボード描画など）
-Init();
+//  更新周期
+var updateInterval_msec = UPTDATE_INTERVAL_MSEC;
 
-window.onload = Start();
+//  更新加算値
+var intervalIncrease_msec = INTERVAL_INCREASE_MSEC;
+
+//  動作中フラグ
+var isRunning = false;
+
+//  初期化処理（ボード描画など）
+init();
+
+//  ボタンイベント登録
+document.getElementById("startButton").onclick = start;
+document.getElementById("resetButton").onclick = reset;
