@@ -4,6 +4,7 @@ const UPTDATE_INTERVAL_MSEC = 5000;
 //  更新頻度加算の初期値（ミリ秒）
 const INTERVAL_INCREASE_MSEC = 100;
 
+//  ホールドを表現するクラス
 class Hold
 {
     constructor(id, isFoot, isClip, LR, x, y, width, height, boardLayer)
@@ -32,6 +33,7 @@ class Hold
     }
 }
 
+//  トレーニングボード自体を表現するクラス
 class Board
 {
     constructor(stage)
@@ -121,6 +123,7 @@ class Board
         stage.add(this.layer);
     }
 
+    //  指定されたIDのホールドを返す
     getHold(id)
     {
         let targetHolds = this.holds.filter(x => x.id == id);
@@ -144,13 +147,15 @@ class Board
         return footHolds[Math.floor(Math.random() * footHolds.length)];
     }
 
+    //  ボードを描画する
     draw()
     {
         this.layer.draw();
     }
 }
 
-class Select
+//  ホールド選択
+class HoldSelect
 {
     constructor(id, isFoot, LR, selectLayer, selectedHold)
     {
@@ -191,6 +196,7 @@ class Select
         selectLayer.add(this.text);
     }
 
+    //  選択しているホールドを更新する
     updateSelect(selectedHold)
     {
         this.rect.x(selectedHold.rect.x());
@@ -206,7 +212,8 @@ class Select
     }
 }
 
-class Selector
+//  ホールド選択を管理するクラス
+class HoldSelector
 {
     constructor(stage)
     {
@@ -214,10 +221,10 @@ class Selector
 
         this.selects = [];
         
-        this.selects.push(new Select("LeftHandSelect", false, "L", this.layer, board.getHold("LeftHand38mm")));
-        this.selects.push(new Select("RightHandSelect", false, "R", this.layer, board.getHold("RightHand38mm")));
-        this.selects.push(new Select("LeftFootSelect", true, "L", this.layer, board.getHold("LeftFoot4")));
-        this.selects.push(new Select("RightFootSelect", true, "R", this.layer, board.getHold("RightFoot4")));
+        this.selects.push(new HoldSelect("LeftHandSelect", false, "L", this.layer, board.getHold("LeftHand38mm")));
+        this.selects.push(new HoldSelect("RightHandSelect", false, "R", this.layer, board.getHold("RightHand38mm")));
+        this.selects.push(new HoldSelect("LeftFootSelect", true, "L", this.layer, board.getHold("LeftFoot4")));
+        this.selects.push(new HoldSelect("RightFootSelect", true, "R", this.layer, board.getHold("RightFoot4")));
     
         this.previousSelect = this.selects[0];
 
@@ -225,7 +232,7 @@ class Selector
     }
 
     //  指定したIDに一致する一手の配列を返す
-    getTargetSelects(regExpId)
+    getHoldSelects(regExpId)
     {
         let targetSelects = this.selects.filter(x => x.id.match(regExpId));
 
@@ -235,15 +242,10 @@ class Selector
     //  初期化する
     reset(board)
     {
-        getTargetSelects(/LeftHand/)[0].updateSelect(board.getHold("LeftHand38mm"));
-        getTargetSelects(/RightHand/)[0].updateSelect(board.getHold("RightHand38mm"));
-        getTargetSelects(/LeftFoot/)[0].updateSelect(board.getHold("LeftFoot4"));
-        getTargetSelects(/RightFoot/)[0].updateSelect(board.getHold("RightFoot4"));
-    }
-
-    selectHold(hold)
-    {
-        this.selects[0].updateSelect(hold);
+        this.getHoldSelects(/LeftHand/)[0].updateSelect(board.getHold("LeftHand38mm"));
+        this.getHoldSelects(/RightHand/)[0].updateSelect(board.getHold("RightHand38mm"));
+        this.getHoldSelects(/LeftFoot/)[0].updateSelect(board.getHold("LeftFoot4"));
+        this.getHoldSelects(/RightFoot/)[0].updateSelect(board.getHold("RightFoot4"));
     }
 
     update(board)
@@ -254,7 +256,7 @@ class Selector
         //  最後に動かしたのが足の場合、次は手を動かす
         if(this.previousSelect == this.leftFoot || this.previousSelect == this.rightFoot)
         {
-            let nextHandSelects = this.getTargetSelects(/Hand/);
+            let nextHandSelects = this.getHoldSelects(/Hand/);
 
             nextSelect = nextHandSelects[Math.floor(Math.random() * nextHandSelects.length)];
 
@@ -279,6 +281,7 @@ class Selector
         this.previousSelect = nextSelect;
     }
 
+    //  ホールド選択を描画する
     draw()
     {
         this.layer.draw();
@@ -296,7 +299,7 @@ function init()
     });
 
     board = new Board(stage);
-    selector = new Selector(stage);
+    selector = new HoldSelector(stage);
 
     board.draw();
     selector.draw();
