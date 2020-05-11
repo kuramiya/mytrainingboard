@@ -136,7 +136,7 @@ class Board
     {
         let handHolds = this.holds.filter(x => x.id.match(/Hand/));
 
-        return handHolds[Math.floor(Math.random() * handHolds.length)];
+        return getRandomItem(handHolds);
     }
 
     //  ランダムな足用のホールドを返す
@@ -144,7 +144,7 @@ class Board
     {
         let footHolds = this.holds.filter(x => x.id.match(/Foot/));
 
-        return footHolds[Math.floor(Math.random() * footHolds.length)];
+        return getRandomItem(footHolds);
     }
 
     //  ボードを描画する
@@ -210,6 +210,14 @@ class HoldSelect
         this.text.x(selectedHold.rect.x() + (selectedHold.rect.width() / 2) - 5);
         this.text.y(selectedHold.rect.y() + (selectedHold.rect.height() / 4));
     }
+
+    //  表示・非表示を設定する
+    setVisible(isVisible)
+    {
+        this.rect.visible(isVisible);
+        this.circle.visible(isVisible);
+        this.text.visible(isVisible);
+    }
 }
 
 //  ホールド選択を管理するクラス
@@ -219,33 +227,39 @@ class HoldSelector
     {
         this.layer = new Konva.Layer();
 
-        this.selects = [];
+        this.holdSelects = [];
         
-        this.selects.push(new HoldSelect("LeftHandSelect", false, "L", this.layer, board.getHold("LeftHand38mm")));
-        this.selects.push(new HoldSelect("RightHandSelect", false, "R", this.layer, board.getHold("RightHand38mm")));
-        this.selects.push(new HoldSelect("LeftFootSelect", true, "L", this.layer, board.getHold("LeftFoot4")));
-        this.selects.push(new HoldSelect("RightFootSelect", true, "R", this.layer, board.getHold("RightFoot4")));
+        this.holdSelects.push(new HoldSelect("LeftHandSelect", false, "L", this.layer, board.getHold("LeftHand38mm")));
+        this.holdSelects.push(new HoldSelect("RightHandSelect", false, "R", this.layer, board.getHold("RightHand38mm")));
+        this.holdSelects.push(new HoldSelect("LeftFootSelect", true, "L", this.layer, board.getHold("LeftFoot4")));
+        this.holdSelects.push(new HoldSelect("RightFootSelect", true, "R", this.layer, board.getHold("RightFoot4")));
     
-        this.previousSelect = this.selects[0];
+        this.previousSelect = this.holdSelects[0];
 
         stage.add(this.layer);
     }
 
-    //  指定したIDに一致する一手の配列を返す
+    //  指定したIDに一致するホールド選択の配列を返す
     getHoldSelects(regExpId)
     {
-        let targetSelects = this.selects.filter(x => x.id.match(regExpId));
+        let targetSelects = this.holdSelects.filter(x => x.id.match(regExpId));
 
         return targetSelects;
+    }
+
+    //  指定したIDに一致するホールドを返す
+    getHoldSelect(regExpId)
+    {
+        return this.getHoldSelects(regExpId)[0];
     }
 
     //  初期化する
     reset(board)
     {
-        this.getHoldSelects(/LeftHand/)[0].updateSelect(board.getHold("LeftHand38mm"));
-        this.getHoldSelects(/RightHand/)[0].updateSelect(board.getHold("RightHand38mm"));
-        this.getHoldSelects(/LeftFoot/)[0].updateSelect(board.getHold("LeftFoot4"));
-        this.getHoldSelects(/RightFoot/)[0].updateSelect(board.getHold("RightFoot4"));
+        this.getHoldSelect(/LeftHand/).updateSelect(board.getHold("LeftHand38mm"));
+        this.getHoldSelect(/RightHand/).updateSelect(board.getHold("RightHand38mm"));
+        this.getHoldSelect(/LeftFoot/).updateSelect(board.getHold("LeftFoot4"));
+        this.getHoldSelect(/RightFoot/).updateSelect(board.getHold("RightFoot4"));
     }
 
     update(board)
@@ -254,17 +268,17 @@ class HoldSelector
         let nextHold;
 
         //  最後に動かしたのが足の場合、次は手を動かす
-        if(this.previousSelect == this.leftFoot || this.previousSelect == this.rightFoot)
+        if(this.previousSelect == this.getHoldSelect(/LeftFoot/) || this.previousSelect == this.getHoldSelect(/RightFoot/))
         {
             let nextHandSelects = this.getHoldSelects(/Hand/);
 
-            nextSelect = nextHandSelects[Math.floor(Math.random() * nextHandSelects.length)];
+            nextSelect = getRandomItem(nextHandSelects);
 
             nextHold = board.getRandomHandHold();
         }
         else
         {
-            nextSelect = this.selects[Math.floor(Math.random() * this.selects.length)];
+            nextSelect = getRandomItem(this.holdSelects);
 
             if(nextSelect.id.match(/Hand/))
             {
@@ -341,6 +355,12 @@ function intervalHandler()
     updateInterval_msec = updateInterval_msec + intervalIncrease_msec;
 
     setTimeout(intervalHandler, updateInterval_msec);
+}
+
+//  配列の中からランダムな要素を返す
+function getRandomItem(array)
+{
+    return array[Math.floor(Math.random() * array.length)];
 }
 
 
